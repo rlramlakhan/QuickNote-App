@@ -12,7 +12,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickNote">
         <activity
-            android:name=".view.activities.MainActivity"
+            android:name=".view.activities.AuthActivity"
+            android:exported="false" />
+        <activity
+            android:name=".view.activities.OnboardingActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

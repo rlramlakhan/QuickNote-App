@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">QuickNote</string>
+    <string name="onboarding_image">Onboarding Image</string>
+    <string name="skip">Skip</string>
+    <string name="_continue">Continue</string>
 </resources>

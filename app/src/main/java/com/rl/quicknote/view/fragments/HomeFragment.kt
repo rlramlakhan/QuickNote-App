@@ -1,11 +1,13 @@
 package com.rl.quicknote.view.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -14,8 +16,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentHomeBinding
 import com.rl.quicknote.model.entities.Note
+import com.rl.quicknote.model.repositories.AuthRepository
 import com.rl.quicknote.model.repositories.NoteRepository
+import com.rl.quicknote.view.activities.AuthActivity
 import com.rl.quicknote.view.adapters.NoteAdapter
+import com.rl.quicknote.viewmodel.AuthViewModel
+import com.rl.quicknote.viewmodel.AuthViewModelFactory
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
 import com.rl.quicknote.viewmodel.SharedViewModel
@@ -27,6 +33,7 @@ class HomeFragment : Fragment() {
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var sharedViewModel: SharedViewModel
+    private lateinit var authViewModel: AuthViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +49,10 @@ class HomeFragment : Fragment() {
         binding.recyclerViewMain.adapter = noteAdapter
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+
+        val authRepository = AuthRepository()
+        val authFactory = AuthViewModelFactory(authRepository)
+        authViewModel = ViewModelProvider(this, authFactory)[AuthViewModel::class.java]
         return binding.root
     }
 
@@ -49,6 +60,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         observeViewModel()
+        observeSignOutResult()
         binding.fabBtnAdd.setOnClickListener {
             sharedViewModel.selectNote(null)
             findNavController().navigate(R.id.action_homeFragment_to_noteFragment)
@@ -90,6 +102,10 @@ class HomeFragment : Fragment() {
 
         }
         ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.recyclerViewMain)
+
+        binding.ibMenu.setOnClickListener {
+            showMenu(it)
+        }
     }
 
     private fun observeViewModel() {
@@ -103,6 +119,31 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun showMenu(view: View) {
+        val popupmenu = PopupMenu(requireContext(), view)
+        popupmenu.menuInflater.inflate(R.menu.menu, popupmenu.menu)
+
+        popupmenu.setOnMenuItemClickListener { menuItem ->
+            when(menuItem.itemId) {
+                R.id.signOut -> {
+                    authViewModel.signOut()
+                    true
+                }
+                else -> false
+            }
+        }
+        popupmenu.show()
+    }
+
+    private fun observeSignOutResult() {
+        authViewModel.signOutResult.observe(viewLifecycleOwner) { result ->
+            result.onSuccess {
+                val intent = Intent(requireContext(), AuthActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+            }
+        }
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

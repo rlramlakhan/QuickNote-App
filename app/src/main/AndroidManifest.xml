@@ -12,6 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.QuickNote">
         <activity
+            android:name=".view.activities.MainActivity"
+            android:exported="false" />
+        <activity
             android:name=".view.activities.AuthActivity"
             android:exported="false" />
         <activity

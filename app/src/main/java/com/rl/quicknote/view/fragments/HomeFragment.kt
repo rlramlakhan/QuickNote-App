@@ -5,9 +5,12 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentHomeBinding
 import com.rl.quicknote.model.entities.Note
@@ -58,6 +61,35 @@ class HomeFragment : Fragment() {
             }
 
         })
+
+        val itemTouchHelperCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                return false
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.absoluteAdapterPosition
+                val note = noteAdapter.getNoteAt(position)
+
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Note")
+                    .setMessage("Are you sure you want to delete this note?")
+                    .setPositiveButton("Yes") {_, _ ->
+                        noteViewModel.deleteNote(note)
+                    }
+                    .setNegativeButton("No") {_, _ ->
+                        noteAdapter.notifyItemChanged(position)
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+
+        }
+        ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(binding.recyclerViewMain)
     }
 
     private fun observeViewModel() {

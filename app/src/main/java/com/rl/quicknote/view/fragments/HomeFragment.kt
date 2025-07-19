@@ -114,6 +114,7 @@ class HomeFragment : Fragment() {
                 binding.tvNoNotes.visibility = View.VISIBLE
             } else {
                 noteAdapter.updateList(notes)
+                binding.tvNoNotes.visibility = View.GONE
             }
             binding.progressBarMain.visibility = View.GONE
         }

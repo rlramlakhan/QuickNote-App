@@ -10,10 +10,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentHomeBinding
+import com.rl.quicknote.model.entities.Note
 import com.rl.quicknote.model.repositories.NoteRepository
 import com.rl.quicknote.view.adapters.NoteAdapter
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
+import com.rl.quicknote.viewmodel.SharedViewModel
 
 class HomeFragment : Fragment() {
 
@@ -21,6 +23,7 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteAdapter: NoteAdapter
+    private lateinit var sharedViewModel: SharedViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,6 +37,8 @@ class HomeFragment : Fragment() {
         binding.recyclerViewMain.layoutManager = LinearLayoutManager(requireContext())
         noteAdapter = NoteAdapter()
         binding.recyclerViewMain.adapter = noteAdapter
+
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         return binding.root
     }
 
@@ -44,6 +49,14 @@ class HomeFragment : Fragment() {
         binding.fabBtnAdd.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_noteFragment)
         }
+
+        noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
+            override fun onItemClick(note: Note) {
+                sharedViewModel.selectNote(note)
+                findNavController().navigate(R.id.action_homeFragment_to_showNoteFragment)
+            }
+
+        })
     }
 
     private fun observeViewModel() {

@@ -13,6 +13,7 @@ import java.util.Locale
 class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     private var notes = listOf<Note>()
+    private var listener: OnItemClickListener? = null
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NoteViewHolder {
         val binding = LayoutEachNoteBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return NoteViewHolder(binding)
@@ -29,6 +30,9 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
             tvContent.text = note.content
             tvTimeStamp.text = formateTimeStamp(note.timeStamp)
         }
+        holder.binding.root.setOnClickListener {
+            listener?.onItemClick(note)
+        }
     }
 
     private fun formateTimeStamp(timeStamp: String): String {
@@ -42,5 +46,12 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         notifyDataSetChanged()
     }
 
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        this.listener = listener
+    }
+
+    interface OnItemClickListener {
+        fun onItemClick(note: Note)
+    }
     class NoteViewHolder(val binding: LayoutEachNoteBinding): RecyclerView.ViewHolder(binding.root)
 }

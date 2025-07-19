@@ -1,8 +1,82 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     tools:context=".view.fragments.NoteFragment">
+
+    <ImageButton
+        android:id="@+id/ibBackNote"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/arrow_back"
+        android:src="@drawable/ic_arrow_back"
+        android:background="@drawable/bg_round"
+        android:backgroundTint="?attr/colorSurfaceContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:tint="?attr/colorPrimary" />
+
+    <ImageButton
+        android:id="@+id/ibSaveNote"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:contentDescription="@string/save"
+        android:src="@drawable/ic_save"
+        android:background="@drawable/bg_round"
+        android:backgroundTint="?attr/colorSurfaceContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/ibBackNote"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        app:tint="?attr/colorPrimary" />
+
+    <EditText
+        android:id="@+id/etTitleNote"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:autofillHints="text"
+        android:background="@null"
+        android:ems="10"
+        android:hint="@string/title"
+        android:textColorHint="?attr/colorSecondary"
+        android:inputType="text"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        app:layout_constraintWidth_max="488dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ibBackNote"
+        app:layout_constraintVertical_bias="0.029999971" />
+
+    <EditText
+        android:id="@+id/etContentNote"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:autofillHints="text"
+        android:background="@null"
+        android:ems="10"
+        android:gravity="start|top"
+        android:hint="@string/type_something"
+        android:textColorHint="?attr/colorSecondary"
+        android:inputType="textMultiLine"
+        android:textColor="?attr/colorPrimary"
+        android:textSize="20sp"
+        app:layout_constraintWidth_max="488dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/etTitleNote"
+        app:layout_constraintVertical_bias="0.029999971" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

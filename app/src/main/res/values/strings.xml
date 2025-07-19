@@ -18,4 +18,6 @@
     <string name="name">Name</string>
     <string name="_name">name</string>
     <string name="already_have_an_account">Already have an account?</string>
+    <string name="reset_your_n_password">Reset your \nPassword</string>
+    <string name="send">Send</string>
 </resources>

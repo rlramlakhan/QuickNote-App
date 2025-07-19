@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
-import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentNoteBinding
 import com.rl.quicknote.model.entities.Note
 import com.rl.quicknote.model.repositories.AuthRepository
@@ -16,6 +15,7 @@ import com.rl.quicknote.viewmodel.AuthViewModel
 import com.rl.quicknote.viewmodel.AuthViewModelFactory
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
+import com.rl.quicknote.viewmodel.SharedViewModel
 
 class NoteFragment : Fragment() {
 
@@ -23,6 +23,9 @@ class NoteFragment : Fragment() {
     private val binding get() = _binding!!
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var authViewModel: AuthViewModel
+    private lateinit var sharedViewModel: SharedViewModel
+    private var isEdit = false
+    private lateinit var savedNote: Note
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +39,8 @@ class NoteFragment : Fragment() {
         val authRepository = AuthRepository()
         val authFactory = AuthViewModelFactory(authRepository)
         authViewModel = ViewModelProvider(this, authFactory)[AuthViewModel::class.java]
+
+        sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
         return binding.root
     }
 
@@ -46,18 +51,33 @@ class NoteFragment : Fragment() {
             findNavController().navigateUp()
         }
 
+        sharedViewModel.selectedNote.observe(viewLifecycleOwner) { note ->
+            note?.let {
+                isEdit = true
+                savedNote = note
+                binding.etTitleNote.setText(note.title)
+                binding.etContentNote.setText(note.content)
+            }
+        }
         binding.ibSaveNote.setOnClickListener {
             val title = binding.etTitleNote.text.toString().trim()
             val content = binding.etContentNote.text.toString().trim()
 
             if (title.isNotEmpty() && content.isNotEmpty()) {
-                val id = System.currentTimeMillis().toString()
-                authViewModel.getCurrentUser()
-                val uid = authViewModel.user.value?.uid.toString()
-                val timestamp = System.currentTimeMillis().toString()
-                val note = Note(id, title, content, timestamp, uid)
-                noteViewModel.addNote(note)
-                findNavController().navigateUp()
+                if (isEdit) {
+                    val note = Note(savedNote.id, title, content, savedNote.timeStamp, savedNote.uid)
+                    noteViewModel.updateNote(note)
+                    findNavController().navigateUp()
+                    findNavController().navigateUp()
+                } else {
+                    val id = System.currentTimeMillis().toString()
+                    authViewModel.getCurrentUser()
+                    val uid = authViewModel.user.value?.uid.toString()
+                    val timestamp = System.currentTimeMillis().toString()
+                    val note = Note(id, title, content, timestamp, uid)
+                    noteViewModel.addNote(note)
+                    findNavController().navigateUp()
+                }
             }
         }
     }

@@ -13,10 +13,22 @@
         <action
             android:id="@+id/action_homeFragment_to_noteFragment"
             app:destination="@id/noteFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_showNoteFragment"
+            app:destination="@id/showNoteFragment" />
     </fragment>
     <fragment
         android:id="@+id/noteFragment"
         android:name="com.rl.quicknote.view.fragments.NoteFragment"
         android:label="fragment_note"
         tools:layout="@layout/fragment_note" />
+    <fragment
+        android:id="@+id/showNoteFragment"
+        android:name="com.rl.quicknote.view.fragments.ShowNoteFragment"
+        android:label="fragment_show_note"
+        tools:layout="@layout/fragment_show_note" >
+        <action
+            android:id="@+id/action_showNoteFragment_to_noteFragment"
+            app:destination="@id/noteFragment" />
+    </fragment>
 </navigation>

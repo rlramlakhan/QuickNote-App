@@ -31,4 +31,5 @@
     <string name="edit">Edit</string>
     <string name="sign_out">Sign Out</string>
     <string name="search_notes">Search notes</string>
+    <string name="no_notes_found">No notes found</string>
 </resources>

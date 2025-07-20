@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
@@ -14,15 +15,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentHomeBinding
+import com.rl.quicknote.databinding.LayoutBottomSheetCategoryBinding
+import com.rl.quicknote.model.entities.Category
 import com.rl.quicknote.model.entities.Note
 import com.rl.quicknote.model.repositories.AuthRepository
+import com.rl.quicknote.model.repositories.CategoryRepository
 import com.rl.quicknote.model.repositories.NoteRepository
 import com.rl.quicknote.view.activities.AuthActivity
+import com.rl.quicknote.view.adapters.CategoryAdapter
 import com.rl.quicknote.view.adapters.NoteAdapter
 import com.rl.quicknote.viewmodel.AuthViewModel
 import com.rl.quicknote.viewmodel.AuthViewModelFactory
+import com.rl.quicknote.viewmodel.CategoryViewModel
+import com.rl.quicknote.viewmodel.CategoryViewModelFactory
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
 import com.rl.quicknote.viewmodel.SharedViewModel
@@ -35,6 +43,9 @@ class HomeFragment : Fragment() {
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var authViewModel: AuthViewModel
+    private lateinit var categoryViewModel: CategoryViewModel
+    private lateinit var categoryAdapter: CategoryAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +65,14 @@ class HomeFragment : Fragment() {
         val authRepository = AuthRepository()
         val authFactory = AuthViewModelFactory(authRepository)
         authViewModel = ViewModelProvider(this, authFactory)[AuthViewModel::class.java]
+
+        val categoryRepository = CategoryRepository()
+        val categoryFactory = CategoryViewModelFactory(categoryRepository)
+        categoryViewModel = ViewModelProvider(this, categoryFactory)[CategoryViewModel::class.java]
+
+        binding.recyclerViewNav.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        categoryAdapter = CategoryAdapter()
+        binding.recyclerViewNav.adapter = categoryAdapter
         return binding.root
     }
 
@@ -61,6 +80,8 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        categoryViewModel.getCategories()
+        observeCategories()
         observeViewModel()
         observeSignOutResult()
         authViewModel.getUserName()
@@ -73,6 +94,15 @@ class HomeFragment : Fragment() {
             sharedViewModel.selectNote(null)
             findNavController().navigate(R.id.action_homeFragment_to_noteFragment)
         }
+
+        categoryAdapter.setOnCategoryClickListener(object : CategoryAdapter.OnItemClickListener {
+            override fun onItemClick(category: Category) {
+                if (category.id == "defaultAdd") {
+                    showAddCategorySheet()
+                }
+            }
+
+        })
 
         noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
             override fun onItemClick(note: Note) {
@@ -118,6 +148,31 @@ class HomeFragment : Fragment() {
         binding.ibSearch.setOnClickListener {
             findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
         }
+    }
+
+    private fun observeCategories() {
+        categoryViewModel.categories.observe(viewLifecycleOwner) { categories ->
+            categoryAdapter.updateList(categories)
+        }
+    }
+
+    private fun showAddCategorySheet() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val binding = LayoutBottomSheetCategoryBinding.inflate(layoutInflater)
+        bottomSheetDialog.setContentView(binding.root)
+
+        binding.btnCreate.setOnClickListener {
+            val categoryName = binding.etCategory.text.toString().trim()
+
+            if (categoryName.isNotEmpty() && categoryName !in listOf("All", "Favorites", "+")) {
+                val id = System.currentTimeMillis().toString()
+                authViewModel.getCurrentUser()
+                val uid = authViewModel.user.value?.uid.toString()
+                categoryViewModel.addCategory(Category(id, categoryName, uid))
+                bottomSheetDialog.dismiss()
+            }
+        }
+        bottomSheetDialog.show()
     }
 
     private fun observeViewModel() {

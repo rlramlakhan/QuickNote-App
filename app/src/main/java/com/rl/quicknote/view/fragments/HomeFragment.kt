@@ -7,7 +7,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.PopupMenu
 import androidx.lifecycle.ViewModelProvider
@@ -81,6 +80,7 @@ class HomeFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         categoryViewModel.getCategories()
+        noteViewModel.getNotes()
         observeCategories()
         observeViewModel()
         observeSignOutResult()
@@ -97,9 +97,26 @@ class HomeFragment : Fragment() {
 
         categoryAdapter.setOnCategoryClickListener(object : CategoryAdapter.OnItemClickListener {
             override fun onItemClick(category: Category) {
-                if (category.id == "defaultAdd") {
-                    showAddCategorySheet()
+                when(category.id) {
+                    "defaultAll" -> noteViewModel.getNotes()
+                    "defaultAdd" -> showAddCategorySheet()
+                    else -> noteViewModel.getNoteByCategory(category)
                 }
+            }
+
+            override fun onItemLongClick(category: Category, position: Int) {
+                if (category.id != "defaultAll" && category.id != "defaultFavorite" && category.id != "defaultAdd")
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Category")
+                    .setMessage("Are you sure you want to delete this category?")
+                    .setPositiveButton("Yes") {_, _ ->
+                        categoryViewModel.deleteCategory(category)
+                    }
+                    .setNegativeButton("No") {_, _ ->
+                        noteAdapter.notifyItemChanged(position)
+                    }
+                    .setCancelable(false)
+                    .show()
             }
 
         })
@@ -108,6 +125,10 @@ class HomeFragment : Fragment() {
             override fun onItemClick(note: Note) {
                 sharedViewModel.selectNote(note)
                 findNavController().navigate(R.id.action_homeFragment_to_showNoteFragment)
+            }
+
+            override fun onLongItemClick(note: Note) {
+                showCategoryPickerDialog(note)
             }
 
         })
@@ -175,13 +196,32 @@ class HomeFragment : Fragment() {
         bottomSheetDialog.show()
     }
 
+    private fun showCategoryPickerDialog(note: Note) {
+        val categories = categoryViewModel.categories.value?.filter { it.id !in listOf("defaultAll", "defaultAdd") } ?: return
+        val category = categories.map { it.categoryName }.toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Move note to category")
+            .setItems(category) { _, index ->
+                val selectedCategory = categories[index]
+                val categoriesList = note.categories.toMutableList()
+                categoriesList.add(selectedCategory)
+                val updatedNote = note.copy(categories = categoriesList)
+                noteViewModel.updateNote(updatedNote)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun observeViewModel() {
         noteViewModel.notes.observe(viewLifecycleOwner) { notes ->
             if (notes.isEmpty()) {
+                binding.recyclerViewMain.visibility = View.GONE
                 binding.tvNoNotes.visibility = View.VISIBLE
             } else {
                 noteAdapter.updateList(notes)
                 binding.tvNoNotes.visibility = View.GONE
+                binding.recyclerViewMain.visibility = View.VISIBLE
             }
             binding.progressBarMain.visibility = View.GONE
         }

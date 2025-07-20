@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
@@ -12,8 +13,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentSearchBinding
 import com.rl.quicknote.model.entities.Note
+import com.rl.quicknote.model.repositories.CategoryRepository
 import com.rl.quicknote.model.repositories.NoteRepository
 import com.rl.quicknote.view.adapters.NoteAdapter
+import com.rl.quicknote.viewmodel.CategoryViewModel
+import com.rl.quicknote.viewmodel.CategoryViewModelFactory
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
 import com.rl.quicknote.viewmodel.SharedViewModel
@@ -25,6 +29,7 @@ class SearchFragment : Fragment() {
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var sharedViewModel: SharedViewModel
+    private lateinit var categoryViewModel: CategoryViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,6 +45,10 @@ class SearchFragment : Fragment() {
         binding.recyclerViewSearchNote.adapter = noteAdapter
 
         sharedViewModel = ViewModelProvider(requireActivity())[SharedViewModel::class.java]
+
+        val categoryRepository = CategoryRepository()
+        val categoryFactory = CategoryViewModelFactory(categoryRepository)
+        categoryViewModel = ViewModelProvider(this, categoryFactory)[CategoryViewModel::class.java]
         return binding.root
     }
 

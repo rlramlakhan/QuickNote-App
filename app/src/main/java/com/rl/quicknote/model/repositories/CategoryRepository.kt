@@ -11,6 +11,7 @@ import com.rl.quicknote.model.entities.Category
 class CategoryRepository {
     private val firebaseDatabase = FirebaseDatabase.getInstance().getReference("categories")
     private val authRepository = AuthRepository()
+    private val noteRepository = NoteRepository()
 
     fun addCategory(category: Category) {
         firebaseDatabase.child(category.uid).child(category.id).setValue(category)
@@ -47,5 +48,10 @@ class CategoryRepository {
 
     fun deleteCategory(category: Category) {
         firebaseDatabase.child(category.uid).child(category.id).removeValue()
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    noteRepository.deleteCategory(category)
+                }
+            }
     }
 }

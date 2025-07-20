@@ -23,6 +23,9 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
     private val _user = MutableLiveData<FirebaseUser?>()
     val user: LiveData<FirebaseUser?> = _user
 
+    private val _userName = MutableLiveData<String?>()
+    val userName: LiveData<String?> = _userName
+
     fun signUp(name: String, email: String, password: String) {
         authRepository.signUp(name, email, password).observeForever { result ->
             _signUpResult.value = result
@@ -49,6 +52,12 @@ class AuthViewModel(private val authRepository: AuthRepository): ViewModel() {
 
     fun getCurrentUser() {
         _user.value = authRepository.getCurrentUser()
+    }
+
+    fun getUserName() {
+        authRepository.getUserName().observeForever { result ->
+            _userName.value = result
+        }
     }
 }
 

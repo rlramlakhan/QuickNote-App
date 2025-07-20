@@ -4,7 +4,10 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.rl.quicknote.model.entities.User
 
 class AuthRepository {
@@ -77,5 +80,23 @@ class AuthRepository {
 
     fun getCurrentUser(): FirebaseUser? {
         return firebaseAuth.currentUser
+    }
+
+    fun getUserName(): LiveData<String?> {
+        val result = MutableLiveData<String?>()
+
+        firebaseDatabase.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    val name = firebaseAuth.currentUser?.uid?.let { snapshot.child(it).child("name").value.toString() }
+                    result.value = name
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+            }
+
+        })
+        return result
     }
 }

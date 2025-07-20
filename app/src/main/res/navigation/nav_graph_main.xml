@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_showNoteFragment"
             app:destination="@id/showNoteFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_searchFragment"
+            app:destination="@id/searchFragment" />
     </fragment>
     <fragment
         android:id="@+id/noteFragment"
@@ -30,5 +33,14 @@
         <action
             android:id="@+id/action_showNoteFragment_to_noteFragment"
             app:destination="@id/noteFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/searchFragment"
+        android:name="com.rl.quicknote.view.fragments.SearchFragment"
+        android:label="fragment_search"
+        tools:layout="@layout/fragment_search" >
+        <action
+            android:id="@+id/action_searchFragment_to_showNoteFragment"
+            app:destination="@id/showNoteFragment" />
     </fragment>
 </navigation>

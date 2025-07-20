@@ -1,5 +1,6 @@
 package com.rl.quicknote.view.fragments
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -56,11 +57,18 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         observeViewModel()
         observeSignOutResult()
+        authViewModel.getUserName()
+        authViewModel.userName.observe(viewLifecycleOwner) {name ->
+            if (name != null) {
+                binding.tvUserName.text = "Hello, $name"
+            }
+        }
         binding.fabBtnAdd.setOnClickListener {
             sharedViewModel.selectNote(null)
             findNavController().navigate(R.id.action_homeFragment_to_noteFragment)
@@ -106,6 +114,10 @@ class HomeFragment : Fragment() {
         binding.ibMenu.setOnClickListener {
             showMenu(it)
         }
+
+        binding.ibSearch.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
+        }
     }
 
     private fun observeViewModel() {
@@ -114,6 +126,7 @@ class HomeFragment : Fragment() {
                 binding.tvNoNotes.visibility = View.VISIBLE
             } else {
                 noteAdapter.updateList(notes)
+                binding.tvNoNotes.visibility = View.GONE
             }
             binding.progressBarMain.visibility = View.GONE
         }

@@ -114,6 +114,10 @@ class HomeFragment : Fragment() {
         binding.ibMenu.setOnClickListener {
             showMenu(it)
         }
+
+        binding.ibSearch.setOnClickListener {
+            findNavController().navigate(R.id.action_homeFragment_to_searchFragment)
+        }
     }
 
     private fun observeViewModel() {

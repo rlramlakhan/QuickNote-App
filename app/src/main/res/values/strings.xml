@@ -30,4 +30,5 @@
     <string name="type_something">Type something...</string>
     <string name="edit">Edit</string>
     <string name="sign_out">Sign Out</string>
+    <string name="search_notes">Search notes</string>
 </resources>

@@ -14,15 +14,22 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.rl.quicknote.R
 import com.rl.quicknote.databinding.FragmentHomeBinding
+import com.rl.quicknote.databinding.LayoutBottomSheetCategoryBinding
+import com.rl.quicknote.model.entities.Category
 import com.rl.quicknote.model.entities.Note
 import com.rl.quicknote.model.repositories.AuthRepository
+import com.rl.quicknote.model.repositories.CategoryRepository
 import com.rl.quicknote.model.repositories.NoteRepository
 import com.rl.quicknote.view.activities.AuthActivity
+import com.rl.quicknote.view.adapters.CategoryAdapter
 import com.rl.quicknote.view.adapters.NoteAdapter
 import com.rl.quicknote.viewmodel.AuthViewModel
 import com.rl.quicknote.viewmodel.AuthViewModelFactory
+import com.rl.quicknote.viewmodel.CategoryViewModel
+import com.rl.quicknote.viewmodel.CategoryViewModelFactory
 import com.rl.quicknote.viewmodel.NoteViewModel
 import com.rl.quicknote.viewmodel.NoteViewModelFactory
 import com.rl.quicknote.viewmodel.SharedViewModel
@@ -35,6 +42,9 @@ class HomeFragment : Fragment() {
     private lateinit var noteAdapter: NoteAdapter
     private lateinit var sharedViewModel: SharedViewModel
     private lateinit var authViewModel: AuthViewModel
+    private lateinit var categoryViewModel: CategoryViewModel
+    private lateinit var categoryAdapter: CategoryAdapter
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +64,14 @@ class HomeFragment : Fragment() {
         val authRepository = AuthRepository()
         val authFactory = AuthViewModelFactory(authRepository)
         authViewModel = ViewModelProvider(this, authFactory)[AuthViewModel::class.java]
+
+        val categoryRepository = CategoryRepository()
+        val categoryFactory = CategoryViewModelFactory(categoryRepository)
+        categoryViewModel = ViewModelProvider(this, categoryFactory)[CategoryViewModel::class.java]
+
+        binding.recyclerViewNav.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        categoryAdapter = CategoryAdapter()
+        binding.recyclerViewNav.adapter = categoryAdapter
         return binding.root
     }
 
@@ -61,6 +79,9 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        categoryViewModel.getCategories()
+        noteViewModel.getNotes()
+        observeCategories()
         observeViewModel()
         observeSignOutResult()
         authViewModel.getUserName()
@@ -74,10 +95,40 @@ class HomeFragment : Fragment() {
             findNavController().navigate(R.id.action_homeFragment_to_noteFragment)
         }
 
+        categoryAdapter.setOnCategoryClickListener(object : CategoryAdapter.OnItemClickListener {
+            override fun onItemClick(category: Category) {
+                when(category.id) {
+                    "defaultAll" -> noteViewModel.getNotes()
+                    "defaultAdd" -> showAddCategorySheet()
+                    else -> noteViewModel.getNoteByCategory(category)
+                }
+            }
+
+            override fun onItemLongClick(category: Category, position: Int) {
+                if (category.id != "defaultAll" && category.id != "defaultFavorite" && category.id != "defaultAdd")
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Delete Category")
+                    .setMessage("Are you sure you want to delete this category?")
+                    .setPositiveButton("Yes") {_, _ ->
+                        categoryViewModel.deleteCategory(category)
+                    }
+                    .setNegativeButton("No") {_, _ ->
+                        noteAdapter.notifyItemChanged(position)
+                    }
+                    .setCancelable(false)
+                    .show()
+            }
+
+        })
+
         noteAdapter.setOnItemClickListener(object : NoteAdapter.OnItemClickListener {
             override fun onItemClick(note: Note) {
                 sharedViewModel.selectNote(note)
                 findNavController().navigate(R.id.action_homeFragment_to_showNoteFragment)
+            }
+
+            override fun onLongItemClick(note: Note) {
+                showCategoryPickerDialog(note)
             }
 
         })
@@ -120,13 +171,57 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun observeCategories() {
+        categoryViewModel.categories.observe(viewLifecycleOwner) { categories ->
+            categoryAdapter.updateList(categories)
+        }
+    }
+
+    private fun showAddCategorySheet() {
+        val bottomSheetDialog = BottomSheetDialog(requireContext())
+        val binding = LayoutBottomSheetCategoryBinding.inflate(layoutInflater)
+        bottomSheetDialog.setContentView(binding.root)
+
+        binding.btnCreate.setOnClickListener {
+            val categoryName = binding.etCategory.text.toString().trim()
+
+            if (categoryName.isNotEmpty() && categoryName !in listOf("All", "Favorites", "+")) {
+                val id = System.currentTimeMillis().toString()
+                authViewModel.getCurrentUser()
+                val uid = authViewModel.user.value?.uid.toString()
+                categoryViewModel.addCategory(Category(id, categoryName, uid))
+                bottomSheetDialog.dismiss()
+            }
+        }
+        bottomSheetDialog.show()
+    }
+
+    private fun showCategoryPickerDialog(note: Note) {
+        val categories = categoryViewModel.categories.value?.filter { it.id !in listOf("defaultAll", "defaultAdd") } ?: return
+        val category = categories.map { it.categoryName }.toTypedArray()
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Move note to category")
+            .setItems(category) { _, index ->
+                val selectedCategory = categories[index]
+                val categoriesList = note.categories.toMutableList()
+                categoriesList.add(selectedCategory)
+                val updatedNote = note.copy(categories = categoriesList)
+                noteViewModel.updateNote(updatedNote)
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
     private fun observeViewModel() {
         noteViewModel.notes.observe(viewLifecycleOwner) { notes ->
             if (notes.isEmpty()) {
+                binding.recyclerViewMain.visibility = View.GONE
                 binding.tvNoNotes.visibility = View.VISIBLE
             } else {
                 noteAdapter.updateList(notes)
                 binding.tvNoNotes.visibility = View.GONE
+                binding.recyclerViewMain.visibility = View.VISIBLE
             }
             binding.progressBarMain.visibility = View.GONE
         }

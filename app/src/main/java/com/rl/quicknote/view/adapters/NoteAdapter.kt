@@ -33,6 +33,10 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
         holder.binding.root.setOnClickListener {
             listener?.onItemClick(note)
         }
+        holder.binding.root.setOnLongClickListener {
+            listener?.onLongItemClick(note)
+            true
+        }
     }
 
     private fun formateTimeStamp(timeStamp: String): String {
@@ -56,6 +60,8 @@ class NoteAdapter: RecyclerView.Adapter<NoteAdapter.NoteViewHolder>() {
 
     interface OnItemClickListener {
         fun onItemClick(note: Note)
+
+        fun onLongItemClick(note: Note) {}
     }
     class NoteViewHolder(val binding: LayoutEachNoteBinding): RecyclerView.ViewHolder(binding.root)
 }

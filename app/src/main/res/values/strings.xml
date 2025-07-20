@@ -32,4 +32,8 @@
     <string name="sign_out">Sign Out</string>
     <string name="search_notes">Search notes</string>
     <string name="no_notes_found">No notes found</string>
+    <string name="create_new_category">Create New Category</string>
+    <string name="category">Category</string>
+    <string name="category_name">category name</string>
+    <string name="create">Create</string>
 </resources>

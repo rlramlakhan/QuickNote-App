@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.rl.quicknote.databinding.FragmentNoteBinding
+import com.rl.quicknote.model.entities.Category
 import com.rl.quicknote.model.entities.Note
 import com.rl.quicknote.model.repositories.AuthRepository
 import com.rl.quicknote.model.repositories.NoteRepository
@@ -65,7 +66,7 @@ class NoteFragment : Fragment() {
 
             if (title.isNotEmpty() && content.isNotEmpty()) {
                 if (isEdit) {
-                    val note = Note(savedNote.id, title, content, savedNote.timeStamp, savedNote.uid)
+                    val note = Note(savedNote.id, title, content, savedNote.timeStamp, savedNote.categories, savedNote.uid)
                     noteViewModel.updateNote(note)
                     findNavController().navigateUp()
                     findNavController().navigateUp()
@@ -74,7 +75,7 @@ class NoteFragment : Fragment() {
                     authViewModel.getCurrentUser()
                     val uid = authViewModel.user.value?.uid.toString()
                     val timestamp = System.currentTimeMillis().toString()
-                    val note = Note(id, title, content, timestamp, uid)
+                    val note = Note(id, title, content, timestamp, listOf(Category("defaultAll", "All", "local")), uid)
                     noteViewModel.addNote(note)
                     findNavController().navigateUp()
                 }
